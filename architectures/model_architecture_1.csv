@@ -1,0 +1,15 @@
+keys,values
+n_conv_layers_b1,3
+n_conv_layers_b2,3
+n_conv_layers_b3,1
+size_conv_kernel_b1,5
+size_conv_kernel_b2,3
+size_conv_kernel_b3,3
+feat_map_dec,2
+feature_maps,32
+dropout_b1,0.35496653671712314
+dropout_b2,0.2668627068357222
+dropout_b3,0.07191723549515544
+act_func,LeakyReLU
+norm_method,None
+strided_conv,0
