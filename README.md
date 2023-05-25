@@ -1,5 +1,6 @@
 # Masterthesis
 Code repository containing the code I used for my master thesis "Influence of Convolutional Neural Network Architectures on Membership Inference Attacks".
+The data used to train every model can be found here: https://drive.google.com/drive/folders/1JO3UldQiDEBlv148VKur58QDKLS3VgAR?usp=share_link
 
 Unfortunaly, due to multiple computing environments, the python programs may need some adjustments before launching them in your own environment. The order, in which I ran the scripts, is the following:
 1. random_search.py: performs the random search in order to identify suitable architectures for later analyses
