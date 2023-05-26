@@ -227,6 +227,8 @@ def objective(trial):
     for epoch in range(num_epochs):
         model.train()
         train_losses = []
+
+        # Iterate trough whole training set and adjust weights
         for batch in train_dl:
             loss = training_step(model, batch, criterion)
             train_losses.append(loss)
@@ -263,6 +265,7 @@ def objective(trial):
         if generalization_gap >= 0.1 and val_accuracy >= 0.7:
             break
 
+    # Ensure, that saved models are pratically usable (have higher validation accuracy than 70%)
     if val_accuracy >= 0.7:
         torch.save(model.state_dict(), base_path + "model_state_dict_{}.pth".format(model_count))
         save_model_params(trial, model_count)
@@ -277,7 +280,7 @@ if __name__ == "__main__":
     except:
         pass
     
-    # params in case random search needs to be restarted.
+    # Parameters to be set in case random search needs to be restarted.
     model_count = 0
     pruned_model_count = 0
 
@@ -285,7 +288,6 @@ if __name__ == "__main__":
     # Initialize robust hyperparameters 
     batch_size = 256
     num_epochs = 150
-
     lr = 0.0012
     eps = 1.12e-8
     wd = 0.00054

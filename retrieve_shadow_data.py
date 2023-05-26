@@ -95,7 +95,10 @@ def get_data(model, ds, criterion, members, i):
     # Calculates individual loss values for every data point for received model and dataset
     losses, labels = [],[]
     model.eval()
+
+    # Don't calculate a gradient in order to save memory
     with torch.no_grad():
+        # For every image in the dataset, calculate and save individual loss value
         for elem in ds:
             image = elem[0].unsqueeze(0).cpu()
             label = torch.tensor(elem[1]).view(1).cpu()
@@ -111,6 +114,7 @@ def get_data(model, ds, criterion, members, i):
 
             del image, label, out, loss
     
+    # Save data for i-th shadow model
     s19_df = pd.DataFrame(np.column_stack([members, losses]), columns=['members', 'losses{}'.format(i)], index=range(len(ds)))
     return s19_df
 
@@ -145,29 +149,39 @@ if __name__ == '__main__':
     try: os.mkdir(mia_data_path)
     except: pass
 
+    # Load data pool from ../BaseData
     datapool = torch.load(data_path + 'datapool.pt')
 
+    # Get number of available shadow models
     num_shadow_models = len([file for file in os.listdir(base_path) if file.endswith('.pth')])
     print('Retrieving MIA data for ', num_shadow_models, ' shadow models...')
 
+    # Load architecture parameters
     architecture_params = pd.read_csv(base_path + '/model_architecture_{}.csv'.format(victim_model))
     architecture_params = retrieve_params(architecture_params)
 
+    # Initialize loss function
     criterion = nn.CrossEntropyLoss()
 
+    # Iterate trough every of the shadow models, query it with its training and test set and save per-sample loss values.
     for i in range(0, num_shadow_models):
         print('Evaluation shadow model ', i, '...')
+
+        # Load model from architecture parametrs
         model = define_model(architecture_params)
         model.load_state_dict(torch.load(base_path + 'shadow_model{}.pth'.format(i)))
         model.to(device)
         model.eval()
 
+        # Load training indices for respecive shadow model
         indices = pd.read_csv(base_path + 'indices{}.csv'.format(i))
 
+        # Query shadow model to calculate per-sample losses.
         s19_df, s17_df = get_data(model, datapool, criterion, indices, i)
 
         try: 
             os.mkdir(mia_data_path + 's19/')
         except: pass
 
+        # Save resulting dataframe for every shadow model
         s19_df.to_csv(mia_data_path + 's19/sab19_data{}.csv'.format(i), sep=',', index=False)

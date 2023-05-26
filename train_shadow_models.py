@@ -53,6 +53,8 @@ def fit(epochs, model, train_loader, val_loader, train_loader_small, optimizer, 
         # Training phase 
         model.train()
         train_losses = []
+
+        # Iterate trough whole training set and adjust weights
         for batch in train_loader:
             loss = training_step(model, batch, criterion)
             train_losses.append(loss)
@@ -202,6 +204,7 @@ def process_victim_architecture(architecture):
     else:
         raise Exception('CUDA could not be loaded. Training time would take too long.')
 
+    # Load data sets from ../BaseData
     datapool = torch.load(data_path + 'datapool.pt')
     val_ds = torch.load(data_path + 'val_ds.pt')
     val_ds, _ = random_split(val_ds, [5000, len(val_ds)-5000])
@@ -213,7 +216,7 @@ def process_victim_architecture(architecture):
     batch_size = 256
     num_epochs = 150
 
-    # Initialize same hyperparameters used for random search
+    # Initialize robust hyperparameters already used in random search
     learning_rate = 0.0012
     weight_decay = 0.00054
     epsilon = 1.12e-8
@@ -232,7 +235,7 @@ def process_victim_architecture(architecture):
     try: os.mkdir(working_path)
     except: print('Directory already exists!')
 
-    #Copy model architecture in working directory
+    # Copy model architecture in working directory
     victim_architecture = os.path.join(architecture_path, 'model_architecture_{}.csv'.format(victim_model))
     shutil.copyfile(victim_architecture, os.path.join(working_path, 'model_architecture_{}.csv'.format(victim_model)))
 
@@ -241,6 +244,8 @@ def process_victim_architecture(architecture):
     architecture_params = retrieve_params(architecture_params)
     
     shadow_counter = len([file for file in os.listdir(working_path) if 'indices' in file and file.endswith('.csv')])
+
+    # As long there are not 101 trained models, continue training more models
     while(shadow_counter < num_shadows):
         # Subsampling train dataset for i-th shadow model from datapool. Validation dataset will be reused for every shadow model.
         indices = random.sample(range(len(datapool)), train_size)
